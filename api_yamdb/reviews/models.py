@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import RegexValidator
+
 from .validators import ValidationUsername
 
 # Вынес роли в переменные
@@ -85,13 +87,17 @@ class Category(models.Model):
     """Класс категорий(типов) произведений."""
 
     name = models.CharField(
-        max_length=200,
+        max_length=256,
         verbose_name='Название категории',
     )
     slug = models.SlugField(
-        max_length=100,
+        max_length=50,
         unique=True,
-        verbose_name='Адрес'
+        verbose_name='Адрес',
+        validators=[RegexValidator(
+            regex=r'^[-a-zA-Z0-9_]+$',
+            message='Слаг не подходит'
+        )]
     )
 
     class Meta:
@@ -106,13 +112,17 @@ class Genre(models.Model):
     """Класс жанров произведений."""
 
     name = models.CharField(
-        max_length=200,
+        max_length=256,
         verbose_name='Название жанра',
     )
     slug = models.SlugField(
-        max_length=100,
+        max_length=50,
         unique=True,
-        verbose_name='Адрес'
+        verbose_name='Адрес',
+        validators=[RegexValidator(
+            regex=r'^[-a-zA-Z0-9_]+$',
+            message='Слаг не подходит'
+        )]
     )
 
     class Meta:
@@ -127,7 +137,7 @@ class Title(models.Model):
     """Класс произведений."""
 
     name = models.CharField(
-        max_length=200,
+        max_length=256,
         verbose_name='Название произведения',
     )
     year = models.PositiveIntegerField(

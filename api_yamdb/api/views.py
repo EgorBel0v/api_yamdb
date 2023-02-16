@@ -113,7 +113,7 @@ class CategoryViewSet(
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
 
 
 class GenreViewSet(
@@ -128,7 +128,7 @@ class GenreViewSet(
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -138,7 +138,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializerOTHER
     filter_backends = (filters.SearchFilter,)
     search_fields = ('category__slug', 'genre__slug', 'name', 'year')
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
