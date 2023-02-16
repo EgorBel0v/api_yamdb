@@ -45,7 +45,7 @@ class TitleSerializerOTHER(serializers.ModelSerializer):
     """Сериализатор для модели Title для других запросов."""
 
     genre = serializers.SlugRelatedField(
-        mane=True,
+        many=True,
         slug_field='name',
         queryset=Genre.objects.all()
     )
