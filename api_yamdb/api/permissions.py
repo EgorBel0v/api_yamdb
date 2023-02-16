@@ -1,6 +1,13 @@
 from rest_framework import permissions
 
 
+class ReadOnlyPermission(permissions.BasePermission):
+    """Разрешение безопасных запросов для анонимных пользователей"""
+
+    def has_permission(self, request, view):
+        return request.method in permissions.SAFE_METHODS
+
+
 class AdminOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return (

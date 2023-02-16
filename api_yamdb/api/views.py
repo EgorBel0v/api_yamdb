@@ -1,14 +1,19 @@
 from django.core.mail import EmailMessage
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User
-from .permissions import AdminOnly
-from .serializers import GetTokenSerializer, NotAdminSerializer, SignUpSerializer, UsersSerializer
+from reviews.models import User, Category, Genre, Title
+from .permissions import AdminOnly, ReadOnlyPermission
+from .serializers import (
+    GetTokenSerializer, NotAdminSerializer,
+    SignUpSerializer, UsersSerializer,
+    CategorySerializer, GenreSerializer,
+    TitleSerializerGET, TitleSerializerOTHER
+)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -94,3 +99,48 @@ class SignupView(APIView):
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CategoryViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    """Вьюсет для модели Category."""
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    permission_classes = (ReadOnlyPermission, AdminOnly)
+
+
+class GenreViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    """Вьюсет для модели Genre."""
+
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    permission_classes = (ReadOnlyPermission, AdminOnly)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Title."""
+
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializerOTHER
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    permission_classes = (ReadOnlyPermission, AdminOnly)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleSerializerGET
+        return TitleSerializerOTHER
