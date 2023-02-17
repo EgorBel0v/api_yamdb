@@ -46,7 +46,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        fields = ('name', 'slug',)
+        lookup_field = 'slug'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -54,7 +55,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        fields = ('name', 'slug',)
+        lookup_field = 'slug'
 
 
 class TitleSerializerGET(serializers.ModelSerializer):
@@ -62,19 +64,20 @@ class TitleSerializerGET(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.FloatField()
 
     class Meta:
         model = Title
-        fields = (
-            'id',
-            'name',
-            'year',
-            'rating',
-            'description',
-            'genre',
-            'category'
-        )
+        fields = '__all__'
+        # fields = (
+        #     'id',
+        #     'name',
+        #     'year',
+        #     'rating',
+        #     'description',
+        #     'genre',
+        #     'category'
+        # )
 
 
 class TitleSerializerOTHER(serializers.ModelSerializer):
@@ -82,23 +85,17 @@ class TitleSerializerOTHER(serializers.ModelSerializer):
 
     genre = serializers.SlugRelatedField(
         many=True,
-        slug_field='name',
+        slug_field='slug',
         queryset=Genre.objects.all()
     )
     category = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='slug',
         queryset=Category.objects.all()
     )
 
     class Meta:
         model = Title
-        fields = (
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category'
-        )
+        fields = '__all__'
 
         def validate_year(self, value):
             year = dt.date.today().year
@@ -130,7 +127,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id',
+            'pub_date',
+            'author',
+            'text',
+            'score'
+        )
         read_only_fields = (
             'id',
             'pub_date',
@@ -148,7 +151,12 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id',
+            'text',
+            'author',
+            'pub_date'
+        )
         read_only_fields = (
             'id',
             'pub_date',
