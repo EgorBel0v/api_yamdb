@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import User, Title, Category, Genre
 from .permissions import AdminOnly
+from django.db.models import Avg
 from .serializers import (
     GetTokenSerializer, NotAdminSerializer,
     SignUpSerializer, UsersSerializer, GenreSerializer,
@@ -141,7 +142,9 @@ class GenreViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Title."""
 
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')
+    )
     serializer_class = TitleSerializerOTHER
     filter_backends = (filters.SearchFilter,)
     search_fields = ('category__slug', 'genre__slug', 'name', 'year')
@@ -189,7 +192,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         permissions.IsAuthenticatedOrReadOnly
     )
     serializer_class = CommentSerializer
-    # pagination_class = PageNumberPagination
 
     def get_queryset(self):
         review = get_object_or_404(

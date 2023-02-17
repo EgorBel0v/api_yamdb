@@ -47,7 +47,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug',)
-        lookup_field = 'slug'
+        # lookup_field = 'name'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug',)
-        lookup_field = 'slug'
+        # lookup_field = 'name'
 
 
 class TitleSerializerGET(serializers.ModelSerializer):
@@ -64,20 +64,19 @@ class TitleSerializerGET(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.FloatField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
-        fields = '__all__'
-        # fields = (
-        #     'id',
-        #     'name',
-        #     'year',
-        #     'rating',
-        #     'description',
-        #     'genre',
-        #     'category'
-        # )
+        fields = (
+            'id',
+            'name',
+            'year',
+            'description',
+            'genre',
+            'category',
+            'rating',
+        )
 
 
 class TitleSerializerOTHER(serializers.ModelSerializer):
