@@ -47,7 +47,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug',)
-        # lookup_field = 'name'
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -56,7 +55,6 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug',)
-        # lookup_field = 'name'
 
 
 class TitleSerializerGET(serializers.ModelSerializer):
@@ -126,13 +124,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        fields = (
-            'id',
-            'pub_date',
-            'author',
-            'text',
-            'score'
-        )
+        exclude = ('title',)
         read_only_fields = (
             'id',
             'pub_date',
@@ -150,12 +142,7 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = (
-            'id',
-            'text',
-            'author',
-            'pub_date'
-        )
+        exclude = ('review',)
         read_only_fields = (
             'id',
             'pub_date',
