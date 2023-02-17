@@ -114,6 +114,7 @@ class CategoryViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     permission_classes = (ReadOnlyPermission | AdminOnly,)
+    lookup_field = 'slug'
 
 
 class GenreViewSet(
@@ -129,6 +130,7 @@ class GenreViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     permission_classes = (ReadOnlyPermission | AdminOnly,)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
