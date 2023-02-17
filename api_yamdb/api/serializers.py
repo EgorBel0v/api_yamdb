@@ -84,23 +84,17 @@ class TitleSerializerOTHER(serializers.ModelSerializer):
 
     genre = serializers.SlugRelatedField(
         many=True,
-        slug_field='name',
+        slug_field='slug',
         queryset=Genre.objects.all()
     )
     category = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='slug',
         queryset=Category.objects.all()
     )
 
     class Meta:
         model = Title
-        fields = (
-            'name',
-            'year',
-            'description',
-            'genre',
-            'category'
-        )
+        fields = '__all__'
 
         def validate_year(self, value):
             year = dt.date.today().year
