@@ -104,7 +104,8 @@ class SignupView(APIView):
         data = {
             'email_body': (
                 f'Приветствуем, {username}.'
-                f'\nВаш личный код подтверждения для доступа к API: {{confirmation_code}}'
+                f'\nВаш личный код подтверждения для'
+                f'\nдоступа к API: {{confirmation_code}}'
             ),
             'to_email': email,
             'email_subject': 'Код подтверждения для доступа к API!'
@@ -117,19 +118,19 @@ class SignupView(APIView):
 
         if user:
             if user.email != email:
-                return Response({'error': 'Email не соответствует зарегистрированному пользователю.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'error': ('Email не соответствует зарег. пользователю.')},
+                    status=status.HTTP_400_BAD_REQUEST)
             serializer = SignUpSerializer(user, data=request.data)
         else:
             serializer = SignUpSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        data['email_body'] = data['email_body'].format(confirmation_code=user.confirmation_code)
+        data['email_body'] = data['email_body'].format(
+            confirmation_code=user.confirmation_code)
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
 
 
 class CategoryViewSet(
