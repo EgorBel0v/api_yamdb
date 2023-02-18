@@ -1,18 +1,24 @@
-from django.core.mail import EmailMessage
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets, filters, mixins
+from .serializers import ReviewSerializer, CommentSerializer
+from .permissions import AdminModeratorAuthor, ReadOnlyPermission
+from reviews.models import Title, Review
+from django.core.mail import EmailMessage
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, Category, Genre, Title
-from .permissions import AdminOnly, ReadOnlyPermission
+from reviews.models import User, Title, Category, Genre
+from .permissions import AdminOnly
+from django.db.models import Avg
 from .serializers import (
     GetTokenSerializer, NotAdminSerializer,
-    SignUpSerializer, UsersSerializer,
-    CategorySerializer, GenreSerializer,
-    TitleSerializerGET, TitleSerializerOTHER
+    SignUpSerializer, UsersSerializer, GenreSerializer,
+    CategorySerializer, TitleSerializerGET,
+    TitleSerializerOTHER
 )
 
 
@@ -113,7 +119,8 @@ class CategoryViewSet(
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
+    lookup_field = 'slug'
 
 
 class GenreViewSet(
@@ -128,19 +135,80 @@ class GenreViewSet(
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Title."""
 
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')
+    )
     serializer_class = TitleSerializerOTHER
     filter_backends = (filters.SearchFilter,)
     search_fields = ('category__slug', 'genre__slug', 'name', 'year')
-    permission_classes = (ReadOnlyPermission, AdminOnly)
+    permission_classes = (ReadOnlyPermission | AdminOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TitleSerializerGET
         return TitleSerializerOTHER
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Review"""
+
+    serializer_class = ReviewSerializer
+    permission_classes = (
+        AdminModeratorAuthor,
+        permissions.IsAuthenticatedOrReadOnly
+    )
+
+    def get_queryset(self):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        queryset = title.reviews.order_by('id')
+        return queryset
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id')
+        )
+        serializer.save(
+            author=self.request.user,
+            title=title
+        )
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Comments"""
+
+    permission_classes = (
+        AdminModeratorAuthor,
+        permissions.IsAuthenticatedOrReadOnly
+    )
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
+        queryset = review.comments.order_by('id')
+        return queryset
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title=self.kwargs.get('title_id')
+        )
+        serializer.save(
+            author=self.request.user,
+            review=review
+        )
