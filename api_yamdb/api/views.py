@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.core.mail import EmailMessage
+from django.core.mail import send_mail
 from rest_framework import permissions, status, viewsets, filters, mixins
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -84,30 +84,40 @@ class SignupView(APIView):
 
     permission_classes = (permissions.AllowAny,)
 
-    @staticmethod
-    def send_email(data):
-        email = EmailMessage(
-            subject=data['email_subject'],
-            body=data['email_body'],
-            to=[data['to_email']]
-        )
-        email.send()
-
     def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        email_body = (
-            f'Приветсвуем, {user.username}.'
-            f'\nВаш личный код подтверждения для доступа к API: {user.confirmation_code}'
-        )
-        data = {
-            'email_body': email_body,
-            'to_email': user.email,
-            'email_subject': 'Код подтверждения для доступа к API!'
-        }
-        self.send_email(data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        username = request.data.get('username')
+        if User.objects.filter(username=username).exists():
+            user = get_object_or_404(User, username=username)
+            serializer = SignUpSerializer(user, data=request.data)
+            if serializer.is_valid():
+                send_mail(
+                    subject='Код подтверждения',
+                    message=f'Ваш код подтверждения: {user.confirmation_code}',
+                    from_email='apiyamdb@test.ru',
+                    recipient_list=(user.email,),
+                    fail_silently=False,
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            serializer = SignUpSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                send_mail(
+                    subject='Код подтверждения для API',
+                    message=f'Ваш код подтверждения: {user.confirmation_code}',
+                    from_email='apiyamdb@test.ru',
+                    recipient_list=(user.email,),
+                    fail_silently=False,
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
 
 
 class CategoryViewSet(
