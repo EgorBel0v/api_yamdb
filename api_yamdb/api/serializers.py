@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 import datetime as dt
 
-from reviews.models import User, Category, Genre, Title
+from reviews.models import User, Category, Genre, Title, Comments, Review
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -103,3 +103,51 @@ class TitleSerializerOTHER(serializers.ModelSerializer):
                     'Произведение еще не вышло! Проверьте год'
                 )
             return value
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериалайзер для модели Reviews."""
+
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    def validate(self, data):
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = self.context['request'].user
+        is_review_exists = Review.objects.filter(
+            title=title_id,
+            author=user
+        ).exists()
+        if self.context['request'].method == 'POST' and is_review_exists:
+            raise serializers.ValidationError('Можно оставить только 1 отзыв')
+        return data
+
+    class Meta:
+        exclude = ('title',)
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author'
+        )
+        model = Review
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериалайзер для модели Comments."""
+
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        exclude = ('review',)
+        read_only_fields = (
+            'id',
+            'pub_date',
+            'author'
+        )
+        model = Comments
