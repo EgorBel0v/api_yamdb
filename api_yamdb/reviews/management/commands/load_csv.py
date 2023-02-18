@@ -4,7 +4,10 @@ from django.core.management.base import BaseCommand
 
 from api_yamdb.settings import BASE_DIR
 
-from reviews.models import Category, Genre, Title, GenreTitle, User
+from reviews.models import (
+    Category, Genre, Title, GenreTitle,
+    User, Comments, Review
+)
 
 
 class Command(BaseCommand):
@@ -79,3 +82,43 @@ class Command(BaseCommand):
                     last_name=last_name
                 )
                 user.save()
+
+        with open(
+            f'{BASE_DIR}/static/data/review.csv', encoding='utf-8'
+        ) as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                id = row['id']
+                title_id = row['title_id']
+                text = row['text']
+                author_id = row['author']
+                score = row['score']
+                pub_date = row['pub_date']
+                reviews = Review(
+                    id=id,
+                    title_id=title_id,
+                    text=text,
+                    author_id=author_id,
+                    score=score,
+                    pub_date=pub_date
+                )
+                reviews.save()
+
+        with open(
+            f'{BASE_DIR}/static/data/comments.csv', encoding='utf-8'
+        ) as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                id = row['id']
+                review_id = row['review_id']
+                text = row['text']
+                author_id = row['author']
+                pub_date = row['pub_date']
+                comments = Comments(
+                    id=id,
+                    review_id=review_id,
+                    text=text,
+                    author_id=author_id,
+                    pub_date=pub_date
+                )
+                comments.save()
