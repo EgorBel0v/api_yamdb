@@ -6,8 +6,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django_filters.rest_framework import DjangoFilterBackend
+
 from reviews.models import User, Category, Genre, Title
+
 from .permissions import AdminOnly, ReadOnly
+from .filters import TitleFilter
+
 from .serializers import (
     GetTokenSerializer, NotAdminSerializer,
     SignUpSerializer, UsersSerializer,
@@ -138,8 +143,8 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.all()
     serializer_class = TitleSerializerOTHER
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
     permission_classes = (ReadOnly | AdminOnly,)
 
     def get_serializer_class(self):
