@@ -42,19 +42,6 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'username')
 
-        def validate(self, data):
-            username = User.objects.get('username')
-            email = User.objects.get('email')
-            if username == data.get('username'):
-                raise serializers.ValidationError(
-                    'Пользователь с таким username уже существует'
-                )
-            if email == data.get('email'):
-                raise serializers.ValidationError(
-                    'Пользователь с таким email уже существует'
-                )
-            return data
-
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для модели Category."""
