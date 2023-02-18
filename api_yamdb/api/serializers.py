@@ -2,6 +2,8 @@ from rest_framework import serializers
 from reviews.models import User, Genre, Category, Title, Comments, Review
 import datetime as dt
 
+from reviews.models import User, Category, Genre, Title, Comments, Review
+
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,7 +106,7 @@ class TitleSerializerOTHER(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели Reviews"""
+    """Сериалайзер для модели Reviews."""
 
     author = serializers.SlugRelatedField(
         slug_field='username',
@@ -134,7 +136,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """Сериалайзер для модели Comments"""
+    """Сериалайзер для модели Comments."""
 
     author = serializers.SlugRelatedField(
         slug_field='username',
@@ -149,11 +151,3 @@ class CommentSerializer(serializers.ModelSerializer):
             'author'
         )
         model = Comments
-
-        def validate_year(self, value):
-            year = dt.date.today().year
-            if year > value:
-                raise serializers.ValidationError(
-                    'Произведение еще не вышло! Проверьте год'
-                )
-            return value

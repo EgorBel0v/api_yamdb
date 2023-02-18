@@ -3,20 +3,17 @@ from rest_framework.routers import DefaultRouter
 from .views import ReviewViewSet, CommentViewSet
 from .views import (
     SignupView, GetTokenView, UsersViewSet,
-    CategoryViewSet, GenreViewSet, TitleViewSet
+    CategoryViewSet, GenreViewSet, TitleViewSet,
+    ReviewViewSet, CommentViewSet
 )
 app_name = 'api'
 
 v1_router = DefaultRouter()
 
-v1_router.register(
-    'users',
-    UsersViewSet,
-    basename='users'
-)
-v1_router.register('categories', CategoryViewSet)
-v1_router.register('genres', GenreViewSet)
-v1_router.register('titles', TitleViewSet)
+v1_router.register('users', UsersViewSet, basename='users')
+v1_router.register('categories', CategoryViewSet, basename='categories')
+v1_router.register('genres', GenreViewSet, basename='genres')
+v1_router.register('titles', TitleViewSet, basename='titles')
 v1_router.register(
     r'titles/(?P<title_id>[0-9]+)/reviews',
     ReviewViewSet,

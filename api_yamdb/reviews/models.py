@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
 from .validators import ValidationUsername
 
 USER = 'user'
@@ -190,7 +191,6 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.genre} {self.title}'
-
 
 class Review(models.Model):
     """Класс отзывов для произведений."""

@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMessage
 from rest_framework import permissions, status, viewsets, filters, mixins
 from .serializers import ReviewSerializer, CommentSerializer
 from .permissions import AdminModeratorAuthor, ReadOnlyPermission
@@ -11,14 +12,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, Title, Category, Genre
-from .permissions import AdminOnly
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
+
+from reviews.models import User, Category, Genre, Title, Review
+
+from .permissions import AdminOnly, ReadOnly, AdminModeratorAuthor
+from .filters import TitleFilter
+
 from .serializers import (
     GetTokenSerializer, NotAdminSerializer,
-    SignUpSerializer, UsersSerializer, GenreSerializer,
-    CategorySerializer, TitleSerializerGET,
-    TitleSerializerOTHER
+    SignUpSerializer, UsersSerializer,
+    CategorySerializer, GenreSerializer,
+    TitleSerializerGET, TitleSerializerOTHER,
+    ReviewSerializer, CommentSerializer
 )
 
 
@@ -29,6 +36,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
+    http_method_names = ['post', 'get', 'patch', 'delete']
 
     @action(
         methods=['GET', 'PATCH'],
@@ -119,7 +127,7 @@ class CategoryViewSet(
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission | AdminOnly,)
+    permission_classes = (ReadOnly | AdminOnly,)
     lookup_field = 'slug'
 
 
@@ -135,7 +143,7 @@ class GenreViewSet(
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-    permission_classes = (ReadOnlyPermission | AdminOnly,)
+    permission_classes = (ReadOnly | AdminOnly,)
     lookup_field = 'slug'
 
 
@@ -146,9 +154,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')
     )
     serializer_class = TitleSerializerOTHER
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('category__slug', 'genre__slug', 'name', 'year')
-    permission_classes = (ReadOnlyPermission | AdminOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+    permission_classes = (ReadOnly | AdminOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -157,7 +165,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели Review"""
+    """Вьюсет для модели Review."""
 
     serializer_class = ReviewSerializer
     permission_classes = (
@@ -185,7 +193,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели Comments"""
+    """Вьюсет для модели Comments."""
 
     permission_classes = (
         AdminModeratorAuthor,
