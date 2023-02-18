@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+from django.core.validators import (MinValueValidator,
+                                    MaxValueValidator,
+                                    RegexValidator)
 
 from .validators import ValidationUsername
 
@@ -17,8 +19,9 @@ ROLE_CHOICES = [
 
 
 class User(AbstractUser):
-    """"Основная модель Юзеров."""
-    """"Декоратор @property более удобный для работы, чтобы не дублировтаь код."""
+    """"Основная модель Юзеров.
+    Декоратор @property более удобный для работы,
+    чтобы не дублировтаь код."""
 
     username = models.CharField(
         validators=(ValidationUsername,),
@@ -192,6 +195,7 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.genre} {self.title}'
+
 
 class Review(models.Model):
     """Класс отзывов для произведений."""

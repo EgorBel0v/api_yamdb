@@ -31,4 +31,3 @@ urlpatterns = [
     path('v1/', include(v1_router.urls)),
     path('v1/auth/signup/', SignupView.as_view(), name='signup'),
 ]
-#делаем пред рабочую версию

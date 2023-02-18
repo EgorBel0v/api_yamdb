@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 def ValidationUsername(value):
     """"Валидация для Юзернейма."""
-    
+
     if value == 'me':
         raise ValidationError(
             ('<me> не может быть именем пользователя, придумайте другое имя.'),
