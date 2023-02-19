@@ -11,7 +11,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 
@@ -76,7 +76,7 @@ class GetTokenView(APIView):
                 {'username': 'Пользователь не найден!'},
                 status=status.HTTP_404_NOT_FOUND)
         if data.get('confirmation_code') == user.confirmation_code:
-            token = RefreshToken.for_user(user).access_token
+            token = AccessToken.for_user(user)
             return Response({'token': str(token)},
                             status=status.HTTP_201_CREATED)
         return Response(
@@ -168,7 +168,7 @@ class GenreViewSet(
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Title."""
 
-    queryset = Title.objects.all().annotate(
+    queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     )
     serializer_class = TitleSerializerOTHER

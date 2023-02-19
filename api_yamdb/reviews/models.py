@@ -4,7 +4,7 @@ from django.core.validators import (MinValueValidator,
                                     MaxValueValidator,
                                     RegexValidator)
 
-from .validators import ValidationUsername
+from .validators import ValidationUsername, ValidateYear
 
 # Вынес роли в переменные
 USER = 'user'
@@ -145,6 +145,8 @@ class Title(models.Model):
     )
     year = models.PositiveIntegerField(
         verbose_name='Год выпуска',
+        validators=(ValidateYear,),
+        db_index=True
     )
     description = models.TextField(
         verbose_name='Описание',
@@ -235,10 +237,10 @@ class Review(models.Model):
                 name='unique_review'
             )
         ]
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
 
     def __str__(self):
-        return f'Отзыв {self.author} для {self.title}'
+        return f'Отзыв {self.author} для {self.title}, оценка: {self.score}'
 
 
 class Comments(models.Model):

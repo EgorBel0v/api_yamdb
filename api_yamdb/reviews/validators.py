@@ -1,4 +1,5 @@
 import re
+import datetime as dt
 from django.core.exceptions import ValidationError
 
 
@@ -14,4 +15,13 @@ def ValidationUsername(value):
         raise ValidationError(
             (f'Недопустимые символы <{value}> в нике.'),
             params={'value': value},
+        )
+
+
+def ValidateYear(value):
+    """Валидация года произведения."""
+    year = dt.date.today().year
+    if value > year:
+        raise ValidationError(
+            f'{value} не может быть больше {year}'
         )
